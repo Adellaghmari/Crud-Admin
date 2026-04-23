@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum CustomerStatus {
+  LEAD
+  ACTIVE
+  INACTIVE
+}
+
+enum DealPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum DealStatus {
+  OPEN
+  IN_PROGRESS
+  WON
+  LOST
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         UserRole @default(USER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Customer {
+  id        String         @id @default(cuid())
+  name      String
+  email     String         @unique
+  phone     String?
+  status    CustomerStatus @default(LEAD)
+  notes     String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  deals     Deal[]
+}
+
+model Deal {
+  id          String       @id @default(cuid())
+  customerId  String
+  title       String
+  description String?
+  priority    DealPriority @default(MEDIUM)
+  status      DealStatus   @default(OPEN)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  customer    Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+}
